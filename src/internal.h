@@ -127,6 +127,17 @@ struct kissat
   heap scores;
   double scinc;
 
+  // MAB
+  bool mab;
+  double mabc;
+  double mab_reward[2]; // 0 -> focused; 1 -> stable
+  unsigned mab_select[2];
+  unsigned mab_num_arms;
+  double mab_decisions;
+  unsigned *mab_chosen;
+  unsigned mab_chosen_tot;
+
+
   unsigned level;
   frames frames;
 

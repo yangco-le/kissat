@@ -17,10 +17,23 @@
 #include "walk.h"
 
 #include <inttypes.h>
+#include <math.h>
 
 static void
 start_search (kissat * solver)
 {
+
+  // MAB
+  solver->mab = GET_OPTION(mab);
+  if(solver->mab) {
+    for (unsigned i=0;i < solver->mab_num_arms; i++) {
+      solver->mab_reward[i] = 0; 
+      solver->mab_select[i] = 0;
+    }
+    solver->mabc = GET_OPTION(mabcint) * pow(10, GET_OPTION(mabcmagnitude));
+    solver->mab_select[solver->stable]++; 
+  }
+
   START (search);
   INC (searches);
 
@@ -177,8 +190,8 @@ kissat_search (kissat * solver)
 	break;
       else if (kissat_reducing (solver))
 	res = kissat_reduce (solver);
-      else if (kissat_switching_search_mode (solver))
-	kissat_switch_search_mode (solver);
+  //     else if (kissat_switching_search_mode (solver))
+	// kissat_switch_search_mode (solver);
       else if (kissat_restarting (solver))
 	kissat_restart (solver);
       else if (kissat_rephasing (solver))

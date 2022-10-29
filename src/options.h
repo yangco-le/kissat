@@ -44,6 +44,9 @@ OPTION( forwardeffort, 100, 0, 1e6, "effort in per mille") \
 OPTION( ifthenelse, 1, 0, 1, "extract and eliminate if-then-else gates") \
 OPTION( incremental, 0, 0, 1, "enable incremental solving") \
 LOGOPT( log, 0, 0, 5, "logging level (1=on,2=more,3=check,4/5=mem)") \
+OPTION( mab, 1, 0, 1, "enable MAB") \
+OPTION( mabcmagnitude, -1, -9, 9, "mab const decimal") \
+OPTION( mabcint, 1, 0, 10, "mab const floor") \
 OPTION( mineffort, 10, 0, INT_MAX, "minimum absolute effort in millions") \
 OPTION( minimize, 1, 0, 1, "learned clause minimization") \
 OPTION( minimizedepth, 1e3, 1, 1e6, "minimization depth") \

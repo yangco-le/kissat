@@ -44,6 +44,16 @@ largest_score_unassigned_variable (kissat * solver)
       kissat_pop_max_heap (solver, scores);
       res = kissat_max_heap (scores);
     }
+
+  // MAB
+  if(solver->mab) {
+    solver->mab_decisions++;
+    if(!solver->mab_chosen[res]){
+      solver->mab_chosen_tot++;
+      solver->mab_chosen[res] = 1;
+    }
+  }
+
 #if defined(LOGGING) || defined(CHECK_HEAP)
   const double score = kissat_get_heap_score (scores, res);
 #endif

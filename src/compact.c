@@ -130,6 +130,9 @@ compact_literal (kissat * solver, unsigned dst_lit, unsigned src_lit)
   const unsigned not_dst_lit = NOT (dst_lit);
   solver->values[dst_lit] = solver->values[src_lit];
   solver->values[not_dst_lit] = solver->values[not_src_lit];
+
+  solver->mab_chosen[dst_idx] = solver->mab_chosen[src_idx];
+
 }
 
 static unsigned
@@ -414,6 +417,8 @@ kissat_finalize_compacting (kissat * solver, unsigned vars, unsigned mfixed)
   memset (solver->flags + vars, 0, reduced * sizeof (flags));
   memset (solver->values + 2 * vars, 0, 2 * reduced * sizeof (value));
   memset (solver->watches + 2 * vars, 0, 2 * reduced * sizeof (watches));
+
+  memset (solver->mab_chosen + vars, 0, reduced * sizeof (unsigned));
 
   compact_queue (solver);
   compact_sweep (solver);

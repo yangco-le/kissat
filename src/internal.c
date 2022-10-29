@@ -39,6 +39,10 @@ kissat_init (void)
   solver->scinc = 1.0;
   solver->first_reducible = INVALID_REF;
   solver->last_irredundant = INVALID_REF;
+  // MAB
+  solver->mab_num_arms = 2;
+  solver->mab_decisions = 0;
+  solver->mab_chosen_tot = 0;
 #ifndef NDEBUG
   kissat_init_checker (solver);
 #endif
@@ -244,6 +248,13 @@ kissat_print_statistics (kissat * solver)
   kissat_section (solver, "statistics");
   const bool verbose = (complete || verbosity > 0);
   kissat_statistics_print (solver, verbose);
+
+  if(solver->mab) {
+    printf("c MAB stats : ");
+      for (unsigned i=0; i<solver->mab_num_arms; i++) printf("%d ",solver->mab_select[i]);
+    printf("\n");
+  }
+
 #ifndef NPROOFS
   if (solver->proof)
     {

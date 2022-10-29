@@ -21,6 +21,7 @@ kissat_restarting (kissat * solver)
     return false;
   if (CONFLICTS < solver->limits.restart.conflicts)
     return false;
+  kissat_switch_search_mode (solver);
   if (solver->stable)
     return kissat_reluctant_triggered (&solver->reluctant);
   const double fast = AVERAGE (fast_glue);

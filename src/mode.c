@@ -10,6 +10,7 @@
 #include "resources.h"
 
 #include <inttypes.h>
+#include <math.h>
 
 void
 kissat_init_mode_limit (kissat * solver)
@@ -180,13 +181,35 @@ switch_to_stable_mode (kissat * solver)
   kissat_update_scores (solver);
 }
 
-bool
-kissat_switching_search_mode (kissat * solver)
+// bool
+// kissat_switching_search_mode (kissat * solver)
+// {
+//   assert (!solver->inconsistent);
+
+//   if (GET_OPTION (stable) != 1)
+//     return false;
+
+//   limits *limits = &solver->limits;
+//   statistics *statistics = &solver->statistics;
+
+//   if (limits->mode.conflicts)
+//     {
+//       assert (!solver->stable);
+//       assert (!statistics->switched_modes);
+//       return statistics->conflicts >= limits->mode.conflicts;
+//     }
+
+//   return statistics->search_ticks >= limits->mode.ticks;
+// }
+
+void
+kissat_switch_search_mode (kissat * solver)
 {
+
   assert (!solver->inconsistent);
 
   if (GET_OPTION (stable) != 1)
-    return false;
+    return;
 
   limits *limits = &solver->limits;
   statistics *statistics = &solver->statistics;
@@ -195,16 +218,30 @@ kissat_switching_search_mode (kissat * solver)
     {
       assert (!solver->stable);
       assert (!statistics->switched_modes);
-      return statistics->conflicts >= limits->mode.conflicts;
+      if (statistics->conflicts < limits->mode.conflicts) return;
     }
+  else if (statistics->search_ticks < limits->mode.ticks) return;
 
-  return statistics->search_ticks >= limits->mode.ticks;
-}
+  unsigned stable_restarts = 0; // 统计restart次数
+	solver->mab_reward[solver->stable] += !solver->mab_chosen_tot? 0: log2(solver->mab_decisions) / solver->mab_chosen_tot; // reward更新
+	for (all_variables (idx)) solver->mab_chosen[idx]=0;  // 重置对每个variable的统计
+	solver->mab_chosen_tot = 0;  // 重置chosen_tot
+	solver->mab_decisions = 0;  // 重置decisions
+	for (unsigned i=0; i < solver->mab_num_arms; i++) stable_restarts +=  solver->mab_select[i];  // 统计restart次数
 
-void
-kissat_switch_search_mode (kissat * solver)
-{
-  assert (kissat_switching_search_mode (solver));
+  unsigned curr_chosen = 0;  // 当前的策略选择
+  if (stable_restarts < solver->mab_num_arms) {  // 每个arm没有都被选择过
+		curr_chosen = solver->stable == 0? 1: 0; 
+	} else {
+		double ucb[2];  // 计算upper confidence bound
+		for (unsigned i=0; i < solver->mab_num_arms; i++) {
+		  ucb[i] = solver->mab_reward[i] / solver->mab_select[i] + sqrt(solver->mabc * log(stable_restarts+1) / solver->mab_select[i]);
+		  if (i != 0 && ucb[i]>ucb[curr_chosen]) curr_chosen = i;  // 选择stable模式
+	  }
+  }
+
+	solver->mab_select[curr_chosen]++;  // 统计选择次数
+  if (curr_chosen == solver->stable) return;  // if mode unchanged, do nothing
 
   INC (switched_modes);
 
